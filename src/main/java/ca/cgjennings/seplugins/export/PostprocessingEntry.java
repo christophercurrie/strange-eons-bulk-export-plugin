@@ -19,11 +19,16 @@ public final class PostprocessingEntry {
     private static final SheetRenderer renderer;
     static {
         SheetRenderer theRenderer = null;
-        String className = "SE33Renderer";
+        String className = "SE352Renderer";
         try {
-            Sheet.class.getMethod("getUserBleedMargin");
+            Sheet.class.getMethod("getBleedMargin");
         } catch (NoSuchMethodException nsm) {
-            className = "SE32Renderer";
+            className = "SE33Renderer";
+            try {
+                Sheet.class.getMethod("getUserBleedMargin");
+            } catch (NoSuchMethodException olderVersion) {
+                className = "SE32Renderer";
+            }
         }
         StrangeEons.log.log(Level.INFO, "creating bulk export renderer {0}", className);
         className = PostprocessingEntry.class.getPackage().getName() + '.' + className;
