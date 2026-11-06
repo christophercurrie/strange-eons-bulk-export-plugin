@@ -26,7 +26,7 @@ public class BulkExport extends AbstractPlugin {
 
     @Override
     public float getPluginVersion() {
-        return 1.3f;
+        return 1.4f;
     }
 
     @Override

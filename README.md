@@ -29,6 +29,10 @@ The packaged plug-in is written to `build/libs/BulkExport.seplugin`. To copy it 
 ./gradlew installPlugin
 ```
 
+## Release
+
+Run `./gradlew release` on a clean, pushed `main` branch to create the release commit and version tag, then bump `gradle.properties` to the next snapshot. The task does not push commits or tags; review them and push with `git push --follow-tags` when ready.
+
 ## License
 
 See [LICENSE](LICENSE).

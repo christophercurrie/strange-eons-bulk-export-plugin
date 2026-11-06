@@ -14,7 +14,7 @@ catalog-description = Adds a new project action that exports whole folders \
      <li>Custom postprocessing of exported images via script code.\
      <li>Can use on single files (previously at least two had to be selected).</ul>
 catalog-credit = Christopher G. Jennings
-catalog-version = 1.3
+catalog-version = 1.4
 catalog-tags = project,tool
 catalog-minver = 3690
 

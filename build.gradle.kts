@@ -1,10 +1,11 @@
 plugins {
     `java-library`
     id("org.strangeeons.plugin")
+    id("net.researchgate.release") version "3.2.0"
 }
 
 group = "org.strangeeons.plugins"
-version = "1.3.0-SNAPSHOT"
+version = providers.gradleProperty("version").get()
 description = "Bulk image export plug-in for Strange Eons."
 
 java {
@@ -30,4 +31,11 @@ tasks.withType<JavaCompile>().configureEach {
 strangeEonsPlugin {
     bundleName = "BulkExport"
     bundleType = "seplugin"
+}
+
+release {
+    git {
+        // Create release commits and tags locally; review and push explicitly.
+        pushToRemote = false
+    }
 }
