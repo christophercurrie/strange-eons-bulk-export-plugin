@@ -1,0 +1,71 @@
+name: Release artifacts
+
+on:
+  push:
+    branches: [main]
+    tags: ['[0-9]*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-artifacts
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check out Strange Eons Gradle plugin
+        uses: actions/checkout@v7
+        with:
+          repository: strange-eons/strange-eons-gradle-plugin
+          path: strange-eons-gradle-plugin
+
+      - name: Check out Strange Eons API
+        uses: actions/checkout@v7
+        with:
+          repository: strange-eons/strange-eons
+          ref: v3.5.2
+          path: strange-eons
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Build Strange Eons API
+        working-directory: strange-eons
+        run: ./gradlew :strange-eons-app:shadowJar
+
+      - name: Build plug-in bundle
+        run: ./gradlew assemble -PstrangeEonsGradlePluginDir="$GITHUB_WORKSPACE/strange-eons-gradle-plugin" -PstrangeEonsDir="$GITHUB_WORKSPACE/strange-eons"
+
+      - name: Update latest-main release
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest-main --yes --cleanup-tag || true
+          gh release create latest-main build/libs/BulkExport.seplugin \
+            --target "$GITHUB_SHA" \
+            --title "Latest main build" \
+            --notes "Latest build from the main branch." \
+            --prerelease
+
+      - name: Publish version release artifact
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! grep -qx "version=${GITHUB_REF_NAME}" gradle.properties; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match the version in gradle.properties"
+            exit 1
+          fi
+          gh release create "$GITHUB_REF_NAME" build/libs/BulkExport.seplugin \
+            --title "Bulk Export ${GITHUB_REF_NAME}" \
+            --generate-notes
