@@ -1,10 +1,7 @@
-# NB cache and build output
-**/nbproject/private/
-**/nbproject/Makefile-*.mk
-**/nbproject/Package-*.bash
+.gradle/
 build/
-nbbuild/
 dist/
+nbbuild/
 nbdist/
 .nb-gradle/
 
@@ -15,4 +12,3 @@ Thumbs.db
 
 # Virtual machine crash logs
 hs_err_pid*
-nbproject/genfiles.properties

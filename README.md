@@ -1,17 +1,34 @@
-# Bulk export plug-in for [Strange Eons](https://github.com/CGJennings/strange-eons)
+# Bulk export plug-in for Strange Eons
 
 This repository contains the source code for the [bulk image export plug-in](http://se3docs.cgjennings.ca/um-bulk-export.html).
 
-**Note:** If you simply want to *use* this plug-in, install it from the [plug-in catalogue](http://se3docs.cgjennings.ca/um-plugins-catalogue.html). A quick way to do that is to copy this text: `eonscat:961f` and then switch to the Strange Eons window.
+**Note:** If you simply want to use this plug-in, install it from the [plug-in catalogue](http://se3docs.cgjennings.ca/um-plugins-catalogue.html). A quick way to do that is to copy this text: `eonscat:961f` and then switch to the Strange Eons window.
 
-## Building the plug-in
+## Build
 
-The plug-in expects the Strange Eons repository to be in a sibling directory, like this:
+The build uses the [`strange-eons-gradle-plugin`](https://github.com/strange-eons/strange-eons-gradle-plugin) composite build to create a Strange Eons bundle. By default, Gradle looks for these checkouts at:
 
 ```
-your-projects-directory/
-  strange-eons/
-  se3-bulk-export-plugin/
+../../strange-eons-gradle-plugin/
+../../strange-eons/
 ```
 
-After a successful build, the plug-in will be written to the `dist` folder.
+Override those locations with Gradle properties when needed:
+
+```sh
+./gradlew assemble \
+  -PstrangeEonsGradlePluginDir=/path/to/strange-eons-gradle-plugin \
+  -PstrangeEonsDir=/path/to/strange-eons
+```
+
+The Strange Eons checkout must have `deployment/assembled/strange-eons.jar` built. The app JAR is used only to compile against the Strange Eons API; it is not included in the plug-in bundle.
+
+The packaged plug-in is written to `build/libs/BulkExport.seplugin`. To copy it into the current Strange Eons user's plug-in folder, run:
+
+```sh
+./gradlew installPlugin
+```
+
+## License
+
+See [LICENSE](LICENSE).
