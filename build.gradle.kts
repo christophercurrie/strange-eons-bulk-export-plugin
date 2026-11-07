@@ -34,8 +34,20 @@ strangeEonsPlugin {
 }
 
 release {
+    // The release plugin runs its buildTasks through a nested GradleBuild,
+    // which cannot include this project's composite build. Run the build in
+    // the outer invocation instead.
+    buildTasks.set(emptyList())
     git {
         // Create release commits and tags locally; review and push explicitly.
         pushToRemote = false
     }
+}
+
+tasks.named("runBuildTasks") {
+    enabled = false
+}
+
+tasks.named("release") {
+    dependsOn("assemble")
 }
