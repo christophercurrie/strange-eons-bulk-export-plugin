@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("org.strangeeons.plugin")
+    id("org.strangeeons.plugin") version "1.0.0"
     id("net.researchgate.release") version "3.2.0"
 }
 
