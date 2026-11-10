@@ -50,6 +50,7 @@ strangeEonsPlugin {
     bundleName = "BulkExport"
     bundleType = "seplugin"
     versionProperties = "resources/cgj/export/version.properties"
+    catalogTimestampFromCommit = true
 }
 
 release {
