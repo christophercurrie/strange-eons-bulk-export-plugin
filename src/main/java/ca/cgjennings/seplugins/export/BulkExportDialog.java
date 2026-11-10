@@ -658,33 +658,41 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
             final HashSet<Member> parents = new HashSet<>();
             final LinkedList<String> errors = new LinkedList<>();
             final LinkedList<File> written = new LinkedList<>();
+            final ImageWriteQueue queue = ImageWriteQueue.create();
+            boolean cancelled = false;
 
-            for (Member m : exportList) {
-                if (!"eon".equals(m.getExtension())) {
-                    continue;
-                }
-
-                BusyDialog.statusText(m.getName(), 50);
-                try {
-                    Exporter.Results results = ex.export(m.getFile());
-                    for (File f : results.outputFiles) {
-                        written.add(f);
+            try {
+                for (Member m : exportList) {
+                    if (!"eon".equals(m.getExtension())) {
+                        continue;
                     }
-                    for (String err : results.errors) {
-                        errors.add(err);
-                    }
-                    parents.add(m.getParent());
 
+                    BusyDialog.statusText(m.getName(), 50);
+                    try {
+                        Exporter.Results results = ex.export(m.getFile(), queue);
+                        errors.addAll(results.errors);
+                        parents.add(m.getParent());
+                    } catch (InterruptedException t) {
+                        cancelled = true;
+                        break;
+                    } catch (Exception t) {
+                        errors.add(t.getLocalizedMessage());
+                    }
                     if (BusyDialog.getCurrentDialog().isCancelled()) {
-                        for (File f : written) {
-                            f.delete();
-                        }
-                        written.clear();
+                        cancelled = true;
                         break;
                     }
-                } catch (Exception t) {
-                    errors.add(t.getLocalizedMessage());
                 }
+            } finally {
+                queue.close();
+            }
+            written.addAll(queue.getWritten());
+            errors.addAll(queue.getErrors());
+            if (cancelled) {
+                for (File f : written) {
+                    f.delete();
+                }
+                written.clear();
             }
 
             // update project listings

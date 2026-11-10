@@ -178,6 +178,21 @@ public final class Exporter {
     }
 
     public Results export(File file) {
+        try {
+            return export(file, null);
+        } catch (InterruptedException ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
+    /**
+     * Exports the faces of a file. If a queue is given, images are written by
+     * the queue and its written files and errors are not included in the
+     * results.
+     *
+     * @throws InterruptedException if interrupted while waiting for the queue
+     */
+    Results export(File file, ImageWriteQueue queue) throws InterruptedException {
         Results results = new Results();
 
         // ignore deck files
@@ -214,16 +229,24 @@ public final class Exporter {
 
             applyDimensionLimits(entry);
             postprocess(entry);
-            try {
-                if (entry.image != null) {
-                    final boolean resized = (entry.image.getWidth() != biWidth) || (entry.image.getHeight() != biHeight);
-                    writeImage(entry, resized, results);
+            // allow GC of image buffers
+            sheets[i] = null;
+            if (entry.image != null && entry.exportPath != null && !entry.exportPath.isEmpty()) {
+                final boolean resized = (entry.image.getWidth() != biWidth) || (entry.image.getHeight() != biHeight);
+                final BufferedImage image = entry.image;
+                final File output = new File(entry.exportPath);
+                final String imageFormat = entry.format;
+                final double imageQuality = entry.quality;
+                final double imagePpi = resized ? 0d : ppi;
+                if (queue == null) {
+                    try {
+                        results.add(writeImage(image, output, imageFormat, imageQuality, progressive, imagePpi));
+                    } catch (Exception ex) {
+                        results.add(ex.getLocalizedMessage());
+                    }
+                } else {
+                    queue.submit(() -> writeImage(image, output, imageFormat, imageQuality, progressive, imagePpi));
                 }
-            } catch (Exception ex) {
-                results.add(ex.getLocalizedMessage());
-            } finally {
-                // allow GC of image buffers
-                sheets[i] = null;
             }
 
             // check if we are running under a busy dialog, and if we are and
@@ -270,21 +293,25 @@ public final class Exporter {
         sm.eval(postprocessingCode);
     }
 
-    private void writeImage(PostprocessingEntry entry, boolean replaced, Results results) throws IOException {
-        if (entry.exportPath == null || entry.exportPath.isEmpty()) {
-            return;
-        }
-
-        SimpleImageWriter wr = new SimpleImageWriter(entry.format);
+    /**
+     * Writes an image file. Quality is ignored for lossless formats, which use
+     * the writer's default compression level.
+     *
+     * @param ppi the resolution to record in the file, or 0 for the writer default
+     * @return the file written
+     */
+    static File writeImage(BufferedImage image, File output, String format, double quality, boolean progressive, double ppi) throws IOException {
+        SimpleImageWriter wr = new SimpleImageWriter(format);
         try {
             wr.setProgressiveScan(progressive);
-            wr.setCompressionQuality(wr.isLossless() ? 1f : (float) entry.quality);
-            if (!replaced) {
+            if (!wr.isLossless()) {
+                wr.setCompressionQuality((float) quality);
+            }
+            if (ppi > 0d) {
                 wr.setPixelsPerInch((float) ppi);
             }
-            final File output = new File(entry.exportPath);
-            wr.write(entry.image, output);
-            results.add(output);
+            wr.write(image, output);
+            return output;
         } finally {
             wr.dispose();
         }
