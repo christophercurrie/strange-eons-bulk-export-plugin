@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Writes images on background threads so that encoding overlaps rendering.
- * The number of pending images is bounded to limit memory use.
+ * The memory held by pending images is bounded.
  */
 final class ImageWriteQueue implements AutoCloseable {
 
@@ -26,29 +26,44 @@ final class ImageWriteQueue implements AutoCloseable {
 
     private static final AtomicInteger threadCount = new AtomicInteger();
 
+    private static final int KIB = 1024;
+
     private final ExecutorService executor;
+    // permits are KiB of image data
     private final Semaphore pending;
+    private final int maxPendingKib;
     private final List<File> written = Collections.synchronizedList(new ArrayList<>());
     private final List<String> errors = Collections.synchronizedList(new ArrayList<>());
 
     /**
-     * Creates a queue using the default number of threads.
+     * Creates a queue with one writer per two processors, from 1 to 4, that
+     * holds at most a quarter of the maximum heap in pending images.
      */
     static ImageWriteQueue create() {
-        return new ImageWriteQueue(2, 3);
+        Runtime rt = Runtime.getRuntime();
+        return new ImageWriteQueue(threadsFor(rt.availableProcessors()), rt.maxMemory() / 4);
+    }
+
+    /**
+     * Returns the number of writer threads to use for a processor count.
+     */
+    static int threadsFor(int processors) {
+        return Math.max(1, Math.min(4, processors / 2));
     }
 
     /**
      * Creates a queue.
      *
      * @param threads the number of writer threads
-     * @param maxPending the maximum number of jobs queued or running
+     * @param maxPendingBytes the maximum image data held by queued and running
+     * jobs; a job larger than this runs alone
      */
-    ImageWriteQueue(int threads, int maxPending) {
-        if (threads < 1 || maxPending < threads) {
-            throw new IllegalArgumentException("threads=" + threads + ", maxPending=" + maxPending);
+    ImageWriteQueue(int threads, long maxPendingBytes) {
+        if (threads < 1 || maxPendingBytes < 1) {
+            throw new IllegalArgumentException("threads=" + threads + ", maxPendingBytes=" + maxPendingBytes);
         }
-        pending = new Semaphore(maxPending);
+        maxPendingKib = kib(maxPendingBytes, Integer.MAX_VALUE);
+        pending = new Semaphore(maxPendingKib);
         executor = Executors.newFixedThreadPool(threads, r -> {
             Thread t = new Thread(r, "Bulk export writer " + threadCount.incrementAndGet());
             t.setDaemon(true);
@@ -56,14 +71,20 @@ final class ImageWriteQueue implements AutoCloseable {
         });
     }
 
+    private static int kib(long bytes, int max) {
+        return (int) Math.max(1L, Math.min(max, (bytes + KIB - 1) / KIB));
+    }
+
     /**
-     * Queues a job, blocking while the maximum number of jobs are pending.
+     * Queues a job, blocking until the pending image data leaves room for it.
      *
+     * @param bytes the size of the job's image data
      * @throws InterruptedException if interrupted while waiting
      * @throws java.util.concurrent.RejectedExecutionException if closed
      */
-    void submit(Job job) throws InterruptedException {
-        pending.acquire();
+    void submit(long bytes, Job job) throws InterruptedException {
+        final int cost = kib(bytes, maxPendingKib);
+        pending.acquire(cost);
         try {
             executor.execute(() -> {
                 try {
@@ -74,11 +95,11 @@ final class ImageWriteQueue implements AutoCloseable {
                 } catch (Exception ex) {
                     errors.add(ex.getLocalizedMessage() == null ? ex.toString() : ex.getLocalizedMessage());
                 } finally {
-                    pending.release();
+                    pending.release(cost);
                 }
             });
         } catch (RuntimeException ex) {
-            pending.release();
+            pending.release(cost);
             throw ex;
         }
     }

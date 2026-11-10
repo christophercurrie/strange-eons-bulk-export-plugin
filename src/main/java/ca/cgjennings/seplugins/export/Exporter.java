@@ -245,7 +245,8 @@ public final class Exporter {
                         results.add(ex.getLocalizedMessage());
                     }
                 } else {
-                    queue.submit(() -> writeImage(image, output, imageFormat, imageQuality, progressive, imagePpi));
+                    final long bytes = 4L * image.getWidth() * image.getHeight();
+                    queue.submit(bytes, () -> writeImage(image, output, imageFormat, imageQuality, progressive, imagePpi));
                 }
             }
 
