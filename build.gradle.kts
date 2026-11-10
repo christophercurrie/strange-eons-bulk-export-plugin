@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("org.strangeeons.plugin") version "1.0.0"
+    id("org.strangeeons.plugin") version "1.1.1"
     id("net.researchgate.release") version "3.2.0"
 }
 
@@ -33,6 +33,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:3.27.7")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly(files(tasks.named("generateVersionProperties")))
 }
 
 tasks.test {
@@ -48,6 +49,7 @@ tasks.withType<JavaCompile>().configureEach {
 strangeEonsPlugin {
     bundleName = "BulkExport"
     bundleType = "seplugin"
+    versionProperties = "resources/cgj/export/version.properties"
 }
 
 release {
