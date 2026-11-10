@@ -51,11 +51,23 @@ class ExporterWriteImageTest {
     @Test
     void compressesPng() throws IOException {
         File out = dir.resolve("a.png").toFile();
-        File written = Exporter.writeImage(gradient(), out, "png", 1d, false, 300d);
+        File written = Exporter.writeImage(gradient(), out, "png", 0.75d, false, 300d);
         assertThat(written).isEqualTo(out);
         // uncompressed ARGB data is W * H * 4 bytes
         assertThat(out.length()).isLessThan((long) W * H * 4 / 2);
         assertThat(ImageIO.read(out).getRGB(10, 20)).isEqualTo(gradient().getRGB(10, 20));
+    }
+
+    @Test
+    void appliesPngCompression() throws IOException {
+        File stored = dir.resolve("stored.png").toFile();
+        File smallest = dir.resolve("smallest.png").toFile();
+        Exporter.writeImage(gradient(), stored, "png", 1d, false, 300d);
+        Exporter.writeImage(gradient(), smallest, "png", 0d, false, 300d);
+        // uncompressed ARGB data is W * H * 4 bytes
+        assertThat(stored.length()).isGreaterThanOrEqualTo((long) W * H * 4);
+        assertThat(smallest.length()).isLessThan(stored.length() / 2);
+        assertThat(ImageIO.read(smallest).getRGB(10, 20)).isEqualTo(ImageIO.read(stored).getRGB(10, 20));
     }
 
     @Test

@@ -295,8 +295,8 @@ public final class Exporter {
     }
 
     /**
-     * Writes an image file. Quality is ignored for lossless formats, which use
-     * the writer's default compression level.
+     * Writes an image file. For a lossless format, quality trades file size
+     * for speed: 1 writes without compression and 0 compresses the most.
      *
      * @param ppi the resolution to record in the file, or 0 for the writer default
      * @return the file written
@@ -305,9 +305,7 @@ public final class Exporter {
         SimpleImageWriter wr = new SimpleImageWriter(format);
         try {
             wr.setProgressiveScan(progressive);
-            if (!wr.isLossless()) {
-                wr.setCompressionQuality((float) quality);
-            }
+            wr.setCompressionQuality((float) quality);
             if (ppi > 0d) {
                 wr.setPixelsPerInch((float) ppi);
             }

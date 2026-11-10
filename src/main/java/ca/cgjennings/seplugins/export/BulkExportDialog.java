@@ -430,10 +430,27 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
     }// </editor-fold>//GEN-END:initComponents
 
     private void formatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formatButtonActionPerformed
-        boolean enable = jpegBtn.isSelected();
-        qualitySlider.setEnabled(enable);
-        qualityLabel.setEnabled(enable);
+        final boolean jpeg = jpegBtn.isSelected();
+        if (jpeg != sliderShowsJpeg) {
+            storeSliderQuality();
+            sliderShowsJpeg = jpeg;
+            qualitySlider.setValue(jpeg ? jpegQuality : pngQuality);
+        }
     }//GEN-LAST:event_formatButtonActionPerformed
+
+    // JPEG quality and PNG compression share the slider; each format keeps
+    // its own value
+    private int jpegQuality = 80;
+    private int pngQuality = 75;
+    private boolean sliderShowsJpeg;
+
+    private void storeSliderQuality() {
+        if (sliderShowsJpeg) {
+            jpegQuality = qualitySlider.getValue();
+        } else {
+            pngQuality = qualitySlider.getValue();
+        }
+    }
 
     private void maxSizeFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_maxSizeFieldFocusLost
         getSizeLimit();
@@ -513,11 +530,16 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
         }
 
         String v = s.get("bulk-format", "jpg");
-        if (!v.equals("jpg")) {
+        sliderShowsJpeg = v.equals("jpg");
+        if (sliderShowsJpeg) {
+            jpegBtn.setSelected(true);
+        } else {
             pngBtn.setSelected(true);
         }
 
-        qualitySlider.setValue(s.getInt("bulk-quality", 80));
+        jpegQuality = s.getInt("bulk-quality", 80);
+        pngQuality = s.getInt("bulk-png-quality", 75);
+        qualitySlider.setValue(sliderShowsJpeg ? jpegQuality : pngQuality);
         progressiveCheck.setSelected(s.getYesNo("bulk-progressive", false));
         resolutionCombo.setSelectedItem(s.get("bulk-resolution", "300"));
 
@@ -606,7 +628,9 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
         ex.setFormat(jpegBtn.isSelected() ? SimpleImageWriter.FORMAT_JPEG : SimpleImageWriter.FORMAT_PNG);
         s.set("bulk-format", ex.getFormat());
         ex.setQuality(qualitySlider.getValue() / 100d);
-        s.setInt("bulk-quality", qualitySlider.getValue());
+        storeSliderQuality();
+        s.setInt("bulk-quality", jpegQuality);
+        s.setInt("bulk-png-quality", pngQuality);
         ex.setProgressive(progressiveCheck.isSelected());
         s.setYesNo("bulk-progressive", ex.isProgressive());
         resolutionComboValidate(null);
