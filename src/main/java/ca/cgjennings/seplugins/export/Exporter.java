@@ -35,6 +35,7 @@ public final class Exporter {
     private boolean bleedMargin = false;
     private String postprocessingCode = "";
     private String postprocessingCodeFile = null;
+    private File outputFolder = null;
 
     public static class Results {
 
@@ -162,6 +163,20 @@ public final class Exporter {
         this.postprocessingCodeFile = file;
     }
 
+    public File getOutputFolder() {
+        return outputFolder;
+    }
+
+    /**
+     * Sets the folder that images are written to. If null, each image is
+     * written to the folder that contains its source file.
+     *
+     * @param folder the output folder, or null
+     */
+    public void setOutputFolder(File folder) {
+        this.outputFolder = folder;
+    }
+
     public Results export(File file) {
         Results results = new Results();
 
@@ -277,6 +292,6 @@ public final class Exporter {
 
     @Override
     public String toString() {
-        return "Exporter{" + "format=" + format + ", progressive=" + progressive + ", quality=" + quality + ", ppi=" + ppi + ", dimensionLimit=" + dimensionLimit + ", excludeSimpleFaces=" + excludeSimpleFaces + ", synthesizeBleedMargin=" + bleedMargin + ", postprocessingCode=" + postprocessingCode + '}';
+        return "Exporter{" + "format=" + format + ", progressive=" + progressive + ", quality=" + quality + ", ppi=" + ppi + ", dimensionLimit=" + dimensionLimit + ", excludeSimpleFaces=" + excludeSimpleFaces + ", synthesizeBleedMargin=" + bleedMargin + ", outputFolder=" + outputFolder + ", postprocessingCode=" + postprocessingCode + '}';
     }
 }

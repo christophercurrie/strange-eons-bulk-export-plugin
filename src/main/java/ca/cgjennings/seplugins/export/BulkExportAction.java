@@ -56,32 +56,28 @@ public class BulkExportAction extends TaskAction {
         return true;
     }
 
-    private boolean buildList(Member[] members, List<Member> suitable) {
-        int matches = 0;
-        outer:
+    /**
+     * Collects the component files in the members, descending into folders,
+     * tasks, and projects. If {@code suitable} is null, returns as soon as one
+     * match is found.
+     *
+     * @return true if at least one component file was found
+     */
+    static boolean buildList(Member[] members, List<Member> suitable) {
+        boolean found = false;
         for (Member m : members) {
             if (m.hasChildren()) {
-                for (Member kid : m.getChildren()) {
-                    if (ProjectUtilities.matchExtension(kid, "eon")) {
-                        ++matches;
-                        if (suitable == null) {
-                            break outer;
-                        } else {
-                            suitable.add(kid);
-                        }
-                    }
-                }
+                found |= buildList(m.getChildren(), suitable);
             } else if (ProjectUtilities.matchExtension(m, "eon")) {
-                ++matches;
-                if (suitable == null) {
-                    break outer;
-                } else {
+                found = true;
+                if (suitable != null) {
                     suitable.add(m);
                 }
             }
+            if (found && suitable == null) {
+                return true;
+            }
         }
-        // if suitable is null, we only care IF the command applies, so
-        // we break out of the loop as soon as possible
-        return matches > 0;
+        return found;
     }
 }

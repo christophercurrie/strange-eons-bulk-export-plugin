@@ -18,9 +18,26 @@ val strangeEonsDir = providers.gradleProperty("strangeEonsDir")
     .map { file(it) }
     .orElse(file("../../strange-eons"))
 
+repositories {
+    mavenCentral()
+}
+
+val strangeEonsJar = files(strangeEonsDir.map { File(it, "deployment/assembled/strange-eons.jar") })
+
 dependencies {
     // The app API is supplied by Strange Eons at runtime, not bundled here.
-    compileOnly(files(strangeEonsDir.map { File(it, "deployment/assembled/strange-eons.jar") }))
+    compileOnly(strangeEonsJar)
+
+    testImplementation(strangeEonsJar)
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.assertj:assertj-core:3.27.7")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
+    systemProperty("java.awt.headless", "true")
 }
 
 tasks.withType<JavaCompile>().configureEach {

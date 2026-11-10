@@ -45,6 +45,7 @@ public final class PostprocessingEntry {
         this.gc = gc;
         this.sheet = sheet;
         this.index = index;
+        outputFolder = ex.getOutputFolder();
         ppi = ex.getResolution();
         ppcm = ppi / 2.54d;
         simpleBackFace = sheet instanceof UndecoratedCardBack;
@@ -64,17 +65,10 @@ public final class PostprocessingEntry {
             extension = format;
         }
 
-        final File source = new File(sourcePath);
-        String name = source.getName();
-        final int dot = name.indexOf('.');
-        if (dot >= 0) {
-            name = name.substring(0, dot);
-        }
-        name += '-' + String.valueOf(index + 1) + '.' + format;
-
-        final File dest = new File(source.getParentFile(), name);
-        exportPath = dest.getAbsolutePath();
+        exportPath = ExportPaths.exportFile(new File(sourcePath), index, format, outputFolder).getAbsolutePath();
     }
+
+    private final File outputFolder;
 
     /**
      * String that gives the full path to the file being exported.

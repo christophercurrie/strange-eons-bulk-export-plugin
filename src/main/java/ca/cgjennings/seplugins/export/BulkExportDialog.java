@@ -112,6 +112,9 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
         help = new JHelpButton();
         ((JHelpButton) help).setHelpPage("um-bulk-export");
         resetButton = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
+        saveToFolderCheck = new javax.swing.JCheckBox();
+        outputFolderField = new FolderField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(string("bx-name")); // NOI18N
@@ -345,6 +348,38 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
             }
         });
 
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(string("bx-l-location"))); // NOI18N
+
+        saveToFolderCheck.setText(string("bx-b-save-to-folder")); // NOI18N
+        saveToFolderCheck.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveToFolderCheckActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(saveToFolderCheck)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(outputFolderField)))
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(saveToFolderCheck)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(outputFolderField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -362,7 +397,8 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
                         .addComponent(cancelBtn))
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -377,6 +413,8 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelBtn)
@@ -440,6 +478,10 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
         loadSettings(true);
     }//GEN-LAST:event_resetButtonActionPerformed
 
+    private void saveToFolderCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveToFolderCheckActionPerformed
+        outputFolderField.setEnabled(saveToFolderCheck.isSelected());
+    }//GEN-LAST:event_saveToFolderCheckActionPerformed
+
     private void editScriptBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editScriptBtnActionPerformed
         String name = postProcScriptField.getText();
         File f = new File(name);
@@ -493,11 +535,15 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
         postProcCheck.setSelected(s.getYesNo("bulk-postprocess", false));
         postProcScriptField.setText(s.get("bulk-postprocess-script", ""));
 
+        saveToFolderCheck.setSelected(s.getYesNo("bulk-save-to-folder", false));
+        outputFolderField.setText(s.get("bulk-output-folder", ""));
+
         formatButtonActionPerformed(null);
         resolutionComboValidate(null);
         maxSizeSliderStateChanged(null);
         sizeLimitCheckActionPerformed(null);
         postProcCheckActionPerformed(null);
+        saveToFolderCheckActionPerformed(null);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -513,10 +559,12 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JToggleButton jpegBtn;
     private javax.swing.JTextField maxSizeField;
     private javax.swing.JSlider maxSizeSlider;
     private javax.swing.JButton okBtn;
+    private javax.swing.JTextField outputFolderField;
     private javax.swing.JToggleButton pngBtn;
     private javax.swing.JCheckBox postProcCheck;
     private javax.swing.JTextField postProcScriptField;
@@ -525,6 +573,7 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
     private javax.swing.JSlider qualitySlider;
     private javax.swing.JButton resetButton;
     private javax.swing.JComboBox resolutionCombo;
+    private javax.swing.JCheckBox saveToFolderCheck;
     private javax.swing.JCheckBox sizeLimitCheck;
     // End of variables declaration//GEN-END:variables
 
@@ -572,6 +621,22 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
         s.setYesNo("bulk-synthetic-bleed", ex.isBleedMarginEnabled());
         s.setYesNo("bulk-postprocess", postProcCheck.isSelected());
         s.set("bulk-postprocess-script", postProcScriptField.getText());
+        s.setYesNo("bulk-save-to-folder", saveToFolderCheck.isSelected());
+        s.set("bulk-output-folder", outputFolderField.getText());
+
+        if (saveToFolderCheck.isSelected()) {
+            File folder = ((JFileField) outputFolderField).getFile();
+            if (folder == null) {
+                Toolkit.getDefaultToolkit().beep();
+                outputFolderField.requestFocusInWindow();
+                return;
+            }
+            if (!folder.isDirectory() && !folder.mkdirs()) {
+                ErrorDialog.displayError(string("bx-err-folder", folder.getPath()), null);
+                return;
+            }
+            ex.setOutputFolder(folder);
+        }
 
         // load code if postprocessing enabled
         if (postProcCheck.isSelected() && !postProcScriptField.getText().isEmpty()) {
@@ -625,11 +690,21 @@ public class BulkExportDialog extends javax.swing.JDialog implements AgnosticDia
             // update project listings
             EventQueue.invokeLater(() -> {
                 try {
+                    final ProjectView v = StrangeEons.getWindow().getOpenProjectView();
+                    if (v != null && ex.getOutputFolder() != null) {
+                        // the folder may be new; refresh its nearest listed ancestor
+                        Member folder = null;
+                        for (File f = ex.getOutputFolder().getAbsoluteFile(); f != null && folder == null; f = f.getParentFile()) {
+                            folder = v.getProject().findMember(f);
+                        }
+                        if (folder != null) {
+                            parents.add(folder);
+                        }
+                    }
                     for (Member parent : parents) {
                         parent.synchronize();
                     }
                     if (!written.isEmpty()) {
-                        final ProjectView v = StrangeEons.getWindow().getOpenProjectView();
                         if (v != null) {
                             v.clearSelection();
                             for (File f : written) {
